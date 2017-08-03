@@ -36,7 +36,12 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     :return: Tuple of (logits, train_op, cross_entropy_loss)
     """
     # TODO: Implement function
-    return None, None, None
+    logits           = tf.reshape(nn_last_layer, (-1, num_classes))
+    cross_ent_logits = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=correct_label)
+    cross_ent_loss   = tf.reduce_mean(cross_ent_logits)
+    _, iou_op        = tf.metrics.mean_iou(correct_label, logits, num_classes)
+
+    return logits, iou_op, cross_ent_loss
 tests.test_optimize(optimize)
 
 
