@@ -27,7 +27,14 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :return: The Tensor for the last layer of output
     """
     # TODO: Implement function
-    return None
+    
+    l34 = tf.add(vgg_layer3_out, vgg_layer4_out)
+    l347 = tf.add(l34, vgg_layer7_out)
+    
+    #Input = tf.layers.conv2d_transpose(input, num_classes, 16, strides=(8, 8)) 
+    
+    out = tf.layers.conv2d(input, num_classes, 1, strides=(1,1))
+    return out
 tests.test_layers(layers)
 
 
