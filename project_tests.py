@@ -24,7 +24,7 @@ def _prevent_print(function, params):
 
 def _assert_tensor_shape(tensor, shape, display_name):
     assert tf.assert_rank(tensor, len(shape), message='{} has wrong rank'.format(display_name))
-    tensor_shape = tensor.get_shape().as_list() if len(shape) else []
+    tensor_shape    = tensor.get_shape().as_list() if len(shape) else []
     wrong_dimension = [ten_dim for ten_dim, cor_dim in zip(tensor_shape, shape) if cor_dim is not None and ten_dim != cor_dim]
     assert not wrong_dimension, '{} has wrong shape.  Found {}'.format(display_name, tensor_shape)
 
@@ -47,13 +47,16 @@ class TmpMock(object):
 def test_load_vgg(load_vgg, tf_module):
     with TmpMock(tf_module.saved_model.loader, 'load') as mock_load_model:
         vgg_path = ''
-        sess = tf.Session()
+        sess     = tf.Session()
+
         test_input_image    = tf.placeholder(tf.float32, name='image_input')
         test_keep_prob      = tf.placeholder(tf.float32, name='keep_prob')
         test_vgg_layer3_out = tf.placeholder(tf.float32, name='layer3_out')
         test_vgg_layer4_out = tf.placeholder(tf.float32, name='layer4_out')
         test_vgg_layer7_out = tf.placeholder(tf.float32, name='layer7_out')
+
         input_image, keep_prob, vgg_layer3_out, vgg_layer4_out, vgg_layer7_out = load_vgg(sess, vgg_path)
+
         assert mock_load_model.called, 'tf.saved_model.loader.load() not called'
         assert mock_load_model.call_args == mock.call(sess, ['vgg16'], vgg_path), 'tf.saved_model.loader.load() called with wrong arguments.'
         assert input_image == test_input_image, 'input_image is the wrong object'
@@ -75,15 +78,18 @@ def test_layers(layers):
 
 @test_safe
 def test_optimize(optimize):
-    num_classes = 2
-    shape = [2, 3, 4, num_classes]
+    num_classes   = 2
+    shape         = [2, 3, 4, num_classes]
     layers_output = tf.Variable(tf.zeros(shape))
     correct_label = tf.placeholder(tf.float32, [None, None, None, num_classes])
     learning_rate = tf.placeholder(tf.float32)
+
     logits, train_op, cross_entropy_loss = optimize(layers_output, correct_label, learning_rate, num_classes)
     _assert_tensor_shape(logits, [2*3*4, num_classes], 'Logits')
+
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
+        sess.run(tf.local_variables_initializer())
         sess.run([train_op], {correct_label: np.arange(np.prod(shape)).reshape(shape), learning_rate: 10})
         test, loss = sess.run([layers_output, cross_entropy_loss], {correct_label: np.arange(np.prod(shape)).reshape(shape)})
     assert test.min() != 0 or test.max() != 0, 'Training operation not changing weights.'
@@ -91,19 +97,20 @@ def test_optimize(optimize):
 
 @test_safe
 def test_train_nn(train_nn):
-    epochs = 1
+    epochs     = 1
     batch_size = 2
 
     def get_batches_fn(batach_size_parm):
         shape = [batach_size_parm, 2, 3, 3]
         return np.arange(np.prod(shape)).reshape(shape)
 
-    train_op = tf.constant(0)
+    train_op           = tf.constant(0)
     cross_entropy_loss = tf.constant(10.11)
-    input_image = tf.placeholder(tf.float32, name='input_image')
-    correct_label = tf.placeholder(tf.float32, name='correct_label')
-    keep_prob = tf.placeholder(tf.float32, name='keep_prob')
-    learning_rate = tf.placeholder(tf.float32, name='learning_rate')
+    input_image        = tf.placeholder(tf.float32, name='input_image')
+    correct_label      = tf.placeholder(tf.float32, name='correct_label')
+    keep_prob          = tf.placeholder(tf.float32, name='keep_prob')
+    learning_rate      = tf.placeholder(tf.float32, name='learning_rate')
+
     with tf.Session() as sess:
         parameters = {
             'sess': sess,
@@ -115,7 +122,8 @@ def test_train_nn(train_nn):
             'input_image': input_image,
             'correct_label': correct_label,
             'keep_prob': keep_prob,
-            'learning_rate': learning_rate}
+            'learning_rate': learning_rate
+        }
         _prevent_print(train_nn, parameters)
 
 
