@@ -11,7 +11,7 @@ def test_safe(func):
     def func_wrapper(*args):
         with tf.Graph().as_default():
             result = func(*args)
-        print('Tests Passed')
+        print(func.__name__ + ' tests passed.')
         return result
     return func_wrapper
 
@@ -43,7 +43,7 @@ class TmpMock(object):
         setattr(self.module, self.attrib_name, self.original_attrib)
 
 
-@test_safe
+@test_safe 
 def test_load_vgg(load_vgg, tf_module):
     with TmpMock(tf_module.saved_model.loader, 'load') as mock_load_model:
         vgg_path = ''
