@@ -1,10 +1,10 @@
 import sys
 import os
+import numpy as np
+import tensorflow as tf
 from copy import deepcopy
 from glob import glob
 from unittest import mock
-import numpy as np
-import tensorflow as tf
 
 
 def test_safe(func):
@@ -14,12 +14,6 @@ def test_safe(func):
         print(func.__name__ + ' tests passed.')
         return result
     return func_wrapper
-
-
-def _prevent_print(function, params):
-    sys.stdout = open(os.devnull, "w")
-    function(**params)
-    sys.stdout = sys.__stdout__
 
 
 def _assert_tensor_shape(tensor, shape, display_name):
@@ -90,8 +84,8 @@ def test_optimize(optimize):
 
 @test_safe
 def test_train_nn(train_nn):
-    def get_batches_fn(batach_size_parm):
-        shape = [batach_size_parm, 2, 3, 3]
+    def get_batches_fn(batch_size_parm):
+        shape = [batch_size_parm, 2, 3, 3]
         return np.arange(np.prod(shape)).reshape(shape)
     epochs             = 1
     batch_size         = 2
@@ -99,8 +93,10 @@ def test_train_nn(train_nn):
     cross_entropy_loss = tf.constant(10.11)
     input_image        = tf.placeholder(tf.float32, name='input_image')
     correct_label      = tf.placeholder(tf.float32, name='correct_label')
-    keep_prob          = tf.placeholder(tf.float32, name='keep_prob')
-    learning_rate      = tf.placeholder(tf.float32, name='learning_rate')
+    #keep_prob          = tf.placeholder(tf.float32, name='keep_prob')
+    keep_prob          = 0.5
+    #learning_rate      = tf.placeholder(tf.float32, name='learning_rate')
+    learning_rate      = 0.01
     with tf.Session() as sess:
         parameters = {
             'sess'               : sess,
@@ -114,7 +110,7 @@ def test_train_nn(train_nn):
             'keep_prob'          : keep_prob,
             'learning_rate'      : learning_rate
         }
-        _prevent_print(train_nn, parameters)
+        train_nn(**parameters)
 
 
 @test_safe
