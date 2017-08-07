@@ -34,7 +34,7 @@ def check_compatibility():
 
 def maybe_download_pretrained_vgg(data_dir):
     vgg_filename = 'vgg.zip'
-    vgg_path = os.path.join(data_dir, 'vgg')
+    vgg_path     = os.path.join(data_dir, 'vgg')
     vgg_files = [
         os.path.join(vgg_path, 'variables/variables.data-00000-of-00001'),
         os.path.join(vgg_path, 'variables/variables.index'),
