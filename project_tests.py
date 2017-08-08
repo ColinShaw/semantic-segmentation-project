@@ -76,7 +76,6 @@ def test_optimize(optimize):
     _assert_tensor_shape(logits, [2*3*4, num_classes], 'Logits')
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        #sess.run(tf.local_variables_initializer())
         sess.run([train_op], {correct_label: np.arange(np.prod(shape)).reshape(shape), learning_rate: 10})
         test, loss = sess.run([layers_output, cross_entropy_loss], {correct_label: np.arange(np.prod(shape)).reshape(shape)})
     assert test.min() != 0 or test.max() != 0, 'Training operation not changing weights.'
@@ -84,20 +83,20 @@ def test_optimize(optimize):
 
 @test_safe
 def test_train_nn(train_nn):
+    epochs                     = 1
+    batch_size                 = 2
     def get_batches_fn(batch_size_parm):
         shape = [batch_size_parm, 2, 3, 3]
         return np.arange(np.prod(shape)).reshape(shape)
-    epochs             = 1
-    batch_size         = 2
-    train_op           = tf.constant(0)
-    cross_entropy_loss = tf.constant(10.11)
-    input_image        = tf.placeholder(tf.float32, name='input_image')
-    correct_label      = tf.placeholder(tf.float32, name='correct_label')
-    #keep_prob          = tf.placeholder(tf.float32, name='keep_prob')
-    keep_prob          = 0.5
-    #learning_rate      = tf.placeholder(tf.float32, name='learning_rate')
-    learning_rate      = 0.01
+    train_op                   = tf.constant(0)
+    cross_entropy_loss         = tf.constant(10.11)
+    #input_image, correct_label = get_batches_fn(batch_size)
+    input_image   = tf.placeholder(tf.float32, name='input_image')
+    correct_label = tf.placeholder(tf.float32, name='correct_label')
+    learning_rate = tf.placeholder(tf.float32, name='learning_rate')
+    keep_prob     = tf.placeholder(tf.float32, name='keep_prob')
     with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
         parameters = {
             'sess'               : sess,
             'epochs'             : epochs,

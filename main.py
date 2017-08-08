@@ -38,19 +38,14 @@ tests.test_optimize(optimize_cross_entropy)
 
 
 def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image, correct_label, keep_prob, learning_rate):
-    for epoch in tqdm(range(epochs)):
-        for image, label in get_batches_fn(batch_size):
-            print(image)
-            print(learning_rate)
-            print(keep_prob)
-            feed_dict = { 
-                'input_image'   : image,
-                'correct_label' : label,
-                'keep_prob'     : keep_prob,
-                'learning_rate' : learning_rate
-            }
-            _, loss = sess.run([train_op, cross_entropy_loss], feed_dict=feed_dict)
-            print(loss)
+    feed_dict = { 
+        'input_image'   : input_image,
+        'correct_label' : correct_label,
+        'keep_prob'     : keep_prob,
+        'learning_rate' : learning_rate
+    }
+    _, loss = sess.run([train_op, cross_entropy_loss], feed_dict=feed_dict)
+    return loss
 tests.test_train_nn(train_nn)
 
 
@@ -81,7 +76,9 @@ def run():
         logits, train_op, cross_entropy_loss = optimize_cross_entropy(output, correct_label, learning_rate, num_classes)
        
         # Train the model 
-        train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image, correct_label, keep_prob, learning_rate)
+        for epoch in tqdm(range(epochs)):
+            for _, image, label in tqdm(enumerate(get_batches_fn(batch_size))):
+                train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, image, label, keep_prob, learning_rate)
 
         # Save images using the helper
         helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
