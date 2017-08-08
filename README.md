@@ -44,16 +44,12 @@ so that there is a little nicer output reporting while going through batches and
 epochs.  This can be seen in the `train_nn()` function.  The only thing that is a 
 little curious about it is getting the numeric values for `keep_prob` and 
 `learning_rate` into the feed dictionary.  The reason for this is these are expected
-to be floating point numbers, are arguments to the function, but are defined in the
-tests as tensors.  Tensors generate the error "the value of a feed cannot be a tf.Tensor object,"
-which leads one to just put the constant value in the function.  It isn't immediately
-apparent what the goal is in having a function like `train_nn()` that accepts arguments
-that would seem to be floating point values but have the tests written with 
-placeholders.  Placeholders are inconvenient to get the value from, and the whole
-point of the feed dictionary is to inject values into placeholders.  I just changed that
-in the tests, as it seemed more sensible in my implementation.  I also removed the 
-print suppression function, which makes it hard to do ad hoc manual debugging by 
-printing.
+to be floating point numbers, are arguments to the function, but are passed as tensors.  This
+is a little curious to me since it makes setting configurations a little bit less than
+ideal in terms of code cleanliness.  To overcode this, we need to either add *more* 
+arguments to the already excessive functions, or significantly change how the 
+tests are written to accommodate.  I don't like it, but I put them as configurable
+values in the feed dictionary.
 
 Once the training is complete, there is a handy helper function for running some
 images through the inference step.  Not much to say about this, the code is a one-liner 
