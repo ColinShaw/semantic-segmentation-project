@@ -38,21 +38,24 @@ tests.test_optimize(optimize_cross_entropy)
 
 
 def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image, correct_label, keep_prob, learning_rate):
-    feed_dict = { 
-        'input_image'   : input_image,
-        'correct_label' : correct_label,
-        'keep_prob'     : keep_prob,
-        'learning_rate' : learning_rate
-    }
-    _, loss = sess.run([train_op, cross_entropy_loss], feed_dict=feed_dict)
-    return loss
+    for epoch in tqdm(range(epochs)):
+        for _, d in tqdm(enumerate(get_batches_fn(batch_size))):
+            image, label = d
+            #print(image)
+            #print(label)
+            feed_dict = { 
+                input_image   : image,
+                correct_label : label,
+                keep_prob     : 0.8,
+                learning_rate : 0.001
+            }
+            _, loss = sess.run([train_op, cross_entropy_loss], feed_dict=feed_dict)
 tests.test_train_nn(train_nn)
 
 
 def run():
     epochs         = 1
     batch_size     = 5
-    learning_rate  = 0.01
     num_classes    = 2
     image_shape    = (160, 576)
     data_dir       = './data'
@@ -68,6 +71,7 @@ def run():
 
         # Initialize globals and placeholders
         sess.run(tf.global_variables_initializer())
+        learning_rate = tf.placeholder(dtype = tf.float32)
         correct_label = tf.placeholder(dtype = tf.float32, shape = (None, None, None, num_classes))
 
         # Define network 
@@ -76,18 +80,16 @@ def run():
         logits, train_op, cross_entropy_loss = optimize_cross_entropy(output, correct_label, learning_rate, num_classes)
        
         # Train the model 
-        for epoch in tqdm(range(epochs)):
-            for _, image, label in tqdm(enumerate(get_batches_fn(batch_size))):
-                train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, image, label, keep_prob, learning_rate)
+        train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image, correct_label, keep_prob, learning_rate)
 
         # Save images using the helper
         helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
 
         # Save the model
-        s = tf.train.Saver()
-        s.save(sess, 'model/final.ckpt')
-        s.export_meta_graph('model/final.meta')
-        tf.train.write_graph(sess.graph_def, "./model/", "final.pb", False)
+        saver = tf.train.Saver()
+        saver.save(sess, 'data/model.ckpt')
+        saver.export_meta_graph('data/model.meta')
+        tf.train.write_graph(sess.graph_def, "./data/", "model.pb", False)
 
 
 if __name__ == '__main__':

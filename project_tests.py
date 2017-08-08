@@ -90,11 +90,10 @@ def test_train_nn(train_nn):
         return np.arange(np.prod(shape)).reshape(shape)
     train_op                   = tf.constant(0)
     cross_entropy_loss         = tf.constant(10.11)
-    #input_image, correct_label = get_batches_fn(batch_size)
-    input_image   = tf.placeholder(tf.float32, name='input_image')
-    correct_label = tf.placeholder(tf.float32, name='correct_label')
-    learning_rate = tf.placeholder(tf.float32, name='learning_rate')
-    keep_prob     = tf.placeholder(tf.float32, name='keep_prob')
+    input_image                = tf.placeholder(tf.float32, name='input_image')
+    correct_label              = tf.placeholder(tf.float32, name='correct_label')
+    keep_prob                  = tf.placeholder(tf.float32, name='keep_prob')
+    learning_rate              = tf.placeholder(tf.float32, name='learning_rate')
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         parameters = {
