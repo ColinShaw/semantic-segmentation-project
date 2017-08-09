@@ -1,7 +1,10 @@
 # Semantic Segmentation Project
 
 This is the elective project involving semantic segmentation for Udacity's 
-self-driving car program.   
+self-driving car program.  The original project repo can be found 
+[here](https://github.com/udacity/CarND-Semantic-Segmentation).
+ 
+![Example image](/images/example.png)
 
 
 
