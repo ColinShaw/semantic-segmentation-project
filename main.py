@@ -10,6 +10,18 @@ from tqdm import tqdm
 class FCN(object):
 
     '''
+    Static properties
+    '''
+    training_images = 289
+    num_classes     = 2
+    image_shape     = (160, 576)
+    data_dir        = './data'
+    runs_dir        = './runs'
+    training_subdir = 'data_road/training'
+
+
+
+    '''
     Constructor for setting params
     '''
     def __init__(self, params):
@@ -41,7 +53,7 @@ class FCN(object):
     Truncated norm to make layer initialization readable
     '''
     def tf_norm(self):
-        return tf.truncated_normal_initializer(stddev=self.stddev)
+        return tf.truncated_normal_initializer(stddev=self.init_sd)
 
 
 
@@ -109,7 +121,7 @@ class FCN(object):
                 feed_dict = { 
                     input_image   : image,
                     correct_label : label,
-                    keep_prob     : self.keep_prob,
+                    keep_prob     : self.dropout,
                     learning_rate : self.learning_rate
                 }
 
@@ -150,32 +162,29 @@ class FCN(object):
     '''
     def run(self):
 
-        # Define static project constants
-        num_classes    = 2
-        image_shape    = (160, 576)
-        data_dir       = './data'
-        runs_dir       = './runs'
-        vgg_path       = os.path.join(data_dir, 'vgg')
-
-        # Generate the batching function
-        get_batches_fn = helper.gen_batch_function(os.path.join(data_dir, 'data_road/training'), image_shape)
-
         # Check for compatibility, data set and conditionally download VGG16 model
         helper.check_compatibility() 
-        tests.test_for_kitti_dataset(data_dir)
-        helper.maybe_download_pretrained_vgg(data_dir)
+        tests.test_for_kitti_dataset(self.data_dir)
+        helper.maybe_download_pretrained_vgg(self.data_dir)
+
+        # Define static project constants
+        vgg_path      = os.path.join(self.data_dir, 'vgg')
+        training_path = os.path.join(self.data_dir, self.training_subdir)
+
+        # Define the batching function
+        get_batches_fn = helper.gen_batch_function(training_path, self.image_shape)
 
         # TensorFlow session
         with tf.Session() as sess:
 
             # Placeholders
             learning_rate = tf.placeholder(dtype = tf.float32)
-            correct_label = tf.placeholder(dtype = tf.float32, shape = (None, None, None, num_classes))
+            correct_label = tf.placeholder(dtype = tf.float32, shape = (None, None, None, self.num_classes))
 
             # Define network and training operations 
             input_image, keep_prob, l3, l4, l7   = self.load_vgg(sess, vgg_path)
-            output                               = self.layers(l3, l4, l7, num_classes)
-            logits, train_op, cross_entropy_loss = self.optimize_cross_entropy(output, correct_label, learning_rate, num_classes)
+            output                               = self.layers(l3, l4, l7, self.num_classes)
+            logits, train_op, cross_entropy_loss = self.optimize_cross_entropy(output, correct_label, learning_rate, self.num_classes)
       
             # Initialize variables 
             sess.run(tf.global_variables_initializer())
@@ -184,7 +193,7 @@ class FCN(object):
             self.train_nn(sess, self.epochs, self.batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image, correct_label, keep_prob, learning_rate)
 
             # Save images using the helper
-            helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
+            helper.save_inference_samples(self.runs_dir, self.data_dir, sess, self.image_shape, logits, keep_prob, input_image)
 
             # Save the model
             self.save_model(sess)
@@ -197,11 +206,10 @@ Entry point
 if __name__ == '__main__':
     params = {
         'learning_rate':   0.0001,
-        'keep_prob':       0.5,
+        'dropout':         0.5,
         'epochs':          20,
         'batch_size':      10,
-        'stddev':          0.01,
-        'training_images': 289
+        'init_sd':         0.01
     }
     fcn = FCN(params)
     fcn.run_tests()
