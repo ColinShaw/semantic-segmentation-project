@@ -83,17 +83,17 @@ def test_optimize(optimize):
 
 @test_safe
 def test_train_nn(train_nn):
-    epochs                     = 1
-    batch_size                 = 2
+    epochs     = 1
+    batch_size = 2
     def get_batches_fn(batch_size_parm):
         shape = [batch_size_parm, 2, 3, 3]
         return np.arange(np.prod(shape)).reshape(shape)
-    train_op                   = tf.constant(0)
-    cross_entropy_loss         = tf.constant(10.11)
-    input_image                = tf.placeholder(tf.float32, name='input_image')
-    correct_label              = tf.placeholder(tf.float32, name='correct_label')
-    keep_prob                  = tf.placeholder(tf.float32, name='keep_prob')
-    learning_rate              = tf.placeholder(tf.float32, name='learning_rate')
+    train_op           = tf.constant(0)
+    cross_entropy_loss = tf.constant(10.11)
+    input_image        = tf.placeholder(tf.float32, name='input_image')
+    correct_label      = tf.placeholder(tf.float32, name='correct_label')
+    keep_prob          = tf.placeholder(tf.float32, name='keep_prob')
+    learning_rate      = tf.placeholder(tf.float32, name='learning_rate')
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         parameters = {
@@ -120,4 +120,4 @@ def test_for_kitti_dataset(data_dir):
     assert not (training_images_count == training_labels_count == testing_images_count == 0), 'Kitti dataset not found. Extract Kitti dataset in {}'.format(kitti_dataset_path)
     assert training_images_count == 289, 'Expected 289 training images, found {} images.'.format(training_images_count)
     assert training_labels_count == 289, 'Expected 289 training labels, found {} labels.'.format(training_labels_count)
-    assert testing_images_count == 290, 'Expected 290 testing images, found {} images.'.format(testing_images_count)
+    assert testing_images_count == 290,  'Expected 290 testing images, found {} images.'.format(testing_images_count)
