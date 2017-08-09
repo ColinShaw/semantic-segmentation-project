@@ -6,7 +6,6 @@ import project_tests as tests
 from tqdm import tqdm
 
 
-
 class FCN(object):
 
     '''
@@ -20,14 +19,12 @@ class FCN(object):
     training_subdir = 'data_road/training'
 
 
-
     '''
     Constructor for setting params
     '''
     def __init__(self, params):
         for p in params:
             setattr(self, p, params[p])
-
 
 
     '''
@@ -47,14 +44,12 @@ class FCN(object):
         l7          = graph.get_tensor_by_name('layer7_out:0')
         return input_image, keep_prob, l3, l4, l7
 
-
   
     '''
     Truncated norm to make layer initialization readable
     '''
     def tf_norm(self):
         return tf.truncated_normal_initializer(stddev=self.init_sd)
-
 
 
     ''' 
@@ -80,7 +75,6 @@ class FCN(object):
         return total
 
 
-
     '''
     Optimizer based on cross entropy
     '''
@@ -97,7 +91,6 @@ class FCN(object):
         # Define a training operation using the Adam optimizer
         train_op = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy_loss)
         return logits, train_op, cross_entropy_loss
-
 
 
     ''' 
@@ -134,7 +127,6 @@ class FCN(object):
             print("Loss:  " + str(loss) + "\n")
 
 
-
     '''
     Save the model
     '''
@@ -143,7 +135,6 @@ class FCN(object):
         saver.save(sess, 'data/model.ckpt')
         saver.export_meta_graph('data/model.meta')
         tf.train.write_graph(sess.graph_def, "./data/", "model.pb", False)
-
 
 
     '''
@@ -155,7 +146,6 @@ class FCN(object):
         tests.test_optimize(self.optimize_cross_entropy)
         tests.test_train_nn(self.train_nn)
 
-   
  
     '''
     Main training routine
@@ -197,7 +187,6 @@ class FCN(object):
 
             # Save the model
             self.save_model(sess)
-
 
 
 '''

@@ -7,7 +7,6 @@ import shutil
 import zipfile
 import time
 import tensorflow as tf
-#import warnings
 from glob import glob
 from urllib.request import urlretrieve
 from distutils.version import LooseVersion
