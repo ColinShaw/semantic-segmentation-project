@@ -1,11 +1,14 @@
+import math
 import os.path
 import tensorflow as tf
 import helper
-import warnings
 import project_tests as tests
 from tqdm import tqdm
 
 
+'''
+Load the VGG16 model
+'''
 def load_vgg(sess, vgg_path):
     # Load the saved model
     tf.saved_model.loader.load(sess, ['vgg16'], vgg_path)
@@ -18,9 +21,13 @@ def load_vgg(sess, vgg_path):
     l4          = graph.get_tensor_by_name('layer4_out:0')
     l7          = graph.get_tensor_by_name('layer7_out:0')
     return input_image, keep_prob, l3, l4, l7
+
 tests.test_load_vgg(load_vgg, tf)
 
 
+''' 
+Define the layers
+'''
 def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     l7    = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, 1, kernel_initializer=tf.truncated_normal_initializer(stddev = 0.01))
     l7_up = tf.layers.conv2d_transpose(l7, num_classes, 4, 2, 'SAME', kernel_initializer=tf.truncated_normal_initializer(stddev = 0.01))
@@ -31,9 +38,13 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     l3_l4 = tf.add(l4_up, l3)
     l3_up = tf.layers.conv2d_transpose(l3_l4, num_classes, 16, 8, 'SAME', kernel_initializer=tf.truncated_normal_initializer(stddev = 0.01))
     return l3_up
+
 tests.test_layers(layers)
 
 
+'''
+Optimizer based on cross entropy
+'''
 def optimize_cross_entropy(nn_last_layer, correct_label, learning_rate, num_classes):
     # Reshape logits and label for computing cross entropy
     logits               = tf.reshape(nn_last_layer, (-1, num_classes))
@@ -49,33 +60,57 @@ def optimize_cross_entropy(nn_last_layer, correct_label, learning_rate, num_clas
 tests.test_optimize(optimize_cross_entropy)
 
 
+''' 
+Training runs
+'''
 def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image, correct_label, keep_prob, learning_rate):
     # Iterate over epochs
     for epoch in range(epochs):
-        print("Epoch: " + str(epoch))
+        print("Epoch: " + str(epoch) + "/" + str(epochs))
 
         # Iterate over the batches using the batch generation function
-        for i, d in tqdm(enumerate(get_batches_fn(batch_size))):
+        batch      = get_batches_fn(batch_size)
+        size       = math.ceil(289 / batch_size)
+        total_loss = []
+
+        for i, d in tqdm(enumerate(batch), desc="Batch", total=size):
 
             # Create the feed dictionary
             image, label = d
             feed_dict = { 
                 input_image   : image,
                 correct_label : label,
-                keep_prob     : 0.8,
-                learning_rate : 0.001
+                keep_prob     : 0.5,
+                learning_rate : 0.00005
             }
 
             # Train and compute the loss
             _, loss = sess.run([train_op, cross_entropy_loss], feed_dict=feed_dict)
-        print(loss)
+            total_loss.append(loss)
+
+        # Compute mean epoch loss
+        mean_loss = sum(total_loss) / size
+        print("Loss:  " + str(loss) + "\n")
 tests.test_train_nn(train_nn)
 
 
+'''
+Save the model
+'''
+def save_model(sess):
+    saver = tf.train.Saver()
+    saver.save(sess, 'data/model.ckpt')
+    saver.export_meta_graph('data/model.meta')
+    tf.train.write_graph(sess.graph_def, "./data/", "model.pb", False)
+
+
+'''
+Main routine
+'''
 def run():
     # Define some project constants
-    epochs         = 1
-    batch_size     = 5
+    epochs         = 20
+    batch_size     = 10
     num_classes    = 2
     image_shape    = (160, 576)
     data_dir       = './data'
@@ -112,11 +147,12 @@ def run():
         helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
 
         # Save the model
-        saver = tf.train.Saver()
-        saver.save(sess, 'data/model.ckpt')
-        saver.export_meta_graph('data/model.meta')
-        tf.train.write_graph(sess.graph_def, "./data/", "model.pb", False)
+        save_model(sess)
 
 
+'''
+Entry point
+'''
 if __name__ == '__main__':
     run()
+
