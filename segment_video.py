@@ -25,16 +25,20 @@ class SegmentVideo(object):
     Segments the image
     '''
     def segment_image(self, image):
-        image        = scipy.misc.imresize(image, self.image_shape)
-        im_softmax   = self.sess.run([tf.nn.softmax(logits)], {keep_prob: 1.0, image_pl: [image]})
+        image = scipy.misc.imresize(image, self.image_shape)
+        feed_dict = {
+            self.keep_prob:   1.0,
+            self.input_image: [image]
+        }
+        run_op       = tf.nn.softmax(self.logits)
+        im_softmax   = self.sess.run([run_op], feed_dict=feed_dict)
         im_softmax   = im_softmax[0][:, 1].reshape(image_shape[0], image_shape[1])
         segmentation = (im_softmax > 0.5).reshape(image_shape[0], image_shape[1], 1)
         mask         = np.dot(segmentation, np.array([[0, 255, 0, 127]]))
         mask         = scipy.misc.toimage(mask, mode="RGBA")
         street_im    = scipy.misc.toimage(image)
         street_im.paste(mask, box=None, mask=mask)
-        as_np_array  = np.array(street_im)
-        return as_np_array
+        return np.array(street_im)
 
 
     '''
@@ -57,8 +61,9 @@ class SegmentVideo(object):
         saver = tf.train.import_meta_graph('data/model.meta')
         saver.restore(self.sess, tf.train.latest_checkpoint('data/'))
         graph = tf.get_default_graph()
-        self.image_pl = graph.get_tensor_by_name('image_input:0')
-        self.logits   = graph.get_tensor_by_name('logits:0')
+        self.keep_prob   = graph.get_tensor_by_name('keep_prob:0')
+        self.input_image = graph.get_tensor_by_name('image_input:0')
+        self.logits      = graph.get_tensor_by_name('logits:0')
 
 
     '''
@@ -74,10 +79,11 @@ class SegmentVideo(object):
 '''
 Entry point
 '''
-params = {
-    'input_video':  'something',
-    'output_video': 'something'
-}
-sv = new SegmentVideo(params)
-sv.process_video()
+if __name__=='__main__':
+    params = {
+        'input_video':  'something',
+        'output_video': 'something'
+    }
+    sv = new SegmentVideo(params)
+    sv.process_video()
 

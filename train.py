@@ -81,7 +81,7 @@ class FCN(object):
     def optimize_cross_entropy(self, nn_last_layer, correct_label, learning_rate, num_classes):
 
         # Reshape logits and label for computing cross entropy
-        logits        = tf.reshape(nn_last_layer, (-1, num_classes))
+        logits        = tf.reshape(nn_last_layer, (-1, num_classes), name='logits')
         correct_label = tf.reshape(correct_label, (-1, num_classes))
 
         # Compute cross entropy and loss
