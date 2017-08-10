@@ -196,8 +196,8 @@ if __name__ == '__main__':
     params = {
         'learning_rate':   0.0001,
         'dropout':         0.5,
-        'epochs':          20,
-        'batch_size':      10,
+        'epochs':          5,
+        'batch_size':      1,
         'init_sd':         0.01
     }
     fcn = FCN(params)

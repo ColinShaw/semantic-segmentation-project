@@ -81,9 +81,9 @@ Entry point
 '''
 if __name__=='__main__':
     params = {
-        'input_video':  'something',
-        'output_video': 'something'
+        'input_video':  'video/sunset.mp4',
+        'output_video': 'video/segmented.mp4'
     }
-    sv = new SegmentVideo(params)
+    sv = SegmentVideo(params)
     sv.process_video()
 
