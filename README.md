@@ -10,8 +10,8 @@ self-driving car program.  The original project repo can be found
 
 ### Running the Project
 
-The project can be run with ease by invoking `python main.py`.  The way it 
-is set up in this repo, using a GTX 1060 it takes about 15 minutes to 
+The project can be run with ease by invoking `python train.py`.  The way it 
+is set up in this repo, using a GTX 1060 it takes about 10-15 minutes to 
 train.
 
 
