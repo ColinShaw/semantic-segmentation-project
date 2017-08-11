@@ -122,15 +122,3 @@ def test_for_kitti_dataset(data_dir):
     assert training_labels_count == 289, 'Expected 289 training labels, found {} labels.'.format(training_labels_count)
     assert testing_images_count == 290,  'Expected 290 testing images, found {} images.'.format(testing_images_count)
 
-
-@test_safe
-def test_segmentation_model(restore_model):
-    test_keep_prob = tf.placeholder(tf.float32, name='keep_prob')
-    test_input_image = tf.placeholder(tf.float32, name='image_input')
-    test_logits = tf.placeholder(tf.float32, name='logits')
-    keep_prob, input_image, logits = restore_model()
-    assert keep_prob == test_keep_prob, 'keep_prob is the wrong object'
-    assert input_image == test_input_image, 'image_input is the wrong object'
-    assert logits == test_logits, 'logits is the wrong object'
-
-
