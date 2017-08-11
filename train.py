@@ -99,7 +99,7 @@ class FCN(object):
     def train_nn(self, sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image, correct_label, keep_prob, learning_rate):
 
         # Iterate over epochs
-        for epoch in range(epochs):
+        for epoch in range(1, epochs+1):
             print("Epoch: " + str(epoch) + "/" + str(epochs))
 
             # Iterate over the batches using the batch generation function
