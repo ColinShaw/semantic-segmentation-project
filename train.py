@@ -2,7 +2,7 @@ import math
 import os.path
 import tensorflow as tf
 import helper
-import project_tests as tests
+import tests
 from tqdm import tqdm
 
 
@@ -196,7 +196,7 @@ if __name__ == '__main__':
     params = {
         'learning_rate':   0.0001,
         'dropout':         0.5,
-        'epochs':          20,
+        'epochs':          1,
         'batch_size':      10,
         'init_sd':         0.01
     }

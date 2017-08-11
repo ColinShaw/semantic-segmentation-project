@@ -1,17 +1,12 @@
 import numpy as np
 import scipy.misc
 import tensorflow as tf
+import tests
 from tqdm import tqdm 
 from moviepy.editor import *
 
 
 class SegmentVideo(object):
-
-    '''
-    Constants
-    '''
-    image_shape = (160, 576)
-
 
     '''
     Constructor with param setting
@@ -25,7 +20,6 @@ class SegmentVideo(object):
     Segments the image
     '''
     def segment_image(self, image):
-        image = scipy.misc.imresize(image, self.image_shape)
         feed_dict = {
             self.keep_prob:   1.0,
             self.input_image: [image]
@@ -61,9 +55,10 @@ class SegmentVideo(object):
         saver = tf.train.import_meta_graph('data/model.meta')
         saver.restore(self.sess, tf.train.latest_checkpoint('data/'))
         graph = tf.get_default_graph()
-        self.keep_prob   = graph.get_tensor_by_name('keep_prob:0')
-        self.input_image = graph.get_tensor_by_name('image_input:0')
-        self.logits      = graph.get_tensor_by_name('logits:0')
+        keep_prob   = graph.get_tensor_by_name('keep_prob:0')
+        input_image = graph.get_tensor_by_name('image_input:0')
+        logits      = graph.get_tensor_by_name('logits:0') 
+        return keep_prob, input_image, logits
 
 
     '''
@@ -71,7 +66,8 @@ class SegmentVideo(object):
     '''
     def run(self):
         self.sess = tf.Session() 
-        self.restore_model()
+        tests.test_segmentation_model(self.restore_model)
+        self.keep_prob, self.input_image, self.logits = self.restore_model()
         self.process_video()
 
 
@@ -85,5 +81,5 @@ if __name__=='__main__':
         'output_video': 'video/segmented.mp4'
     }
     sv = SegmentVideo(params)
-    sv.process_video()
+    sv.run()
 
