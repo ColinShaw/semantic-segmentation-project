@@ -19,14 +19,15 @@ class SegmentVideo(object):
     Segments the image
     '''
     def segment_image(self, image):
+        image = scipy.misc.imresize(image, self.image_shape)
         feed_dict = {
             self.keep_prob:   1.0,
             self.input_image: [image]
         }
         run_op       = tf.nn.softmax(self.logits)
         im_softmax   = self.sess.run([run_op], feed_dict=feed_dict)
-        im_softmax   = im_softmax[0][:, 1].reshape(image_shape[0], image_shape[1])
-        segmentation = (im_softmax > 0.5).reshape(image_shape[0], image_shape[1], 1)
+        im_softmax   = im_softmax[0][:, 1].reshape(self.image_shape[0], self.image_shape[1])
+        segmentation = (im_softmax > 0.5).reshape(self.image_shape[0], self.image_shape[1], 1)
         mask         = np.dot(segmentation, np.array([[0, 255, 0, 127]]))
         mask         = scipy.misc.toimage(mask, mode="RGBA")
         street_im    = scipy.misc.toimage(image)
@@ -51,8 +52,15 @@ class SegmentVideo(object):
     Restore model and retrieve pertinent tensors
     '''
     def restore_model(self):
-        saver = tf.train.import_meta_graph('data/model.meta')
-        saver.restore(self.sess, tf.train.latest_checkpoint('data/'))
+        #tf.saved_model.loader.load(self.sess, ['vgg16'], self.model_path)
+        #saver = tf.train.import_meta_graph('data/fcn/variables/saved_model')
+        #saver.restore(self.sess, tf.train.latest_checkpoint('data/fcn/variables/saved_model'))
+        new_saver = tf.train.import_meta_graph('data/fcn/variables/saved_model.meta')
+        new_saver.restore(self.sess, tf.train.latest_checkpoint('data/fcn/variables/'))
+        all_vars = tf.get_collection('vars')
+        for v in all_vars:
+            v_ = sess.run(v)
+            print(v_)
         graph = tf.get_default_graph()
         self.keep_prob   = graph.get_tensor_by_name('keep_prob:0')
         self.input_image = graph.get_tensor_by_name('image_input:0')
@@ -75,7 +83,9 @@ Entry point
 if __name__=='__main__':
     params = {
         'input_video':  'video/sunset.mp4',
-        'output_video': 'video/segmented.mp4'
+        'output_video': 'video/segmented.mp4',
+        'model_path':   'data/fcn',
+        'image_shape':  (192, 320)
     }
     sv = SegmentVideo(params)
     sv.run()

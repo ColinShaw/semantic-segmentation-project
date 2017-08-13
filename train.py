@@ -9,17 +9,6 @@ from tqdm import tqdm
 class FCN(object):
 
     '''
-    Static properties
-    '''
-    training_images = 289
-    num_classes     = 2
-    image_shape     = (160, 576)
-    data_dir        = './data'
-    runs_dir        = './runs'
-    training_subdir = 'data_road/training'
-
-
-    '''
     Constructor for setting params
     '''
     def __init__(self, params):
@@ -132,9 +121,8 @@ class FCN(object):
     '''
     def save_model(self, sess):
         saver = tf.train.Saver()
-        saver.save(sess, 'data/model.ckpt')
-        saver.export_meta_graph('data/model.meta')
-        tf.train.write_graph(sess.graph_def, "./data/", "model.pb", False)
+        saver.save(sess, self.save_location + 'variables/saved_model')
+        tf.train.write_graph(sess.graph_def, self.save_location, "saved_model.pb", False)
 
 
     '''
@@ -196,9 +184,16 @@ if __name__ == '__main__':
     params = {
         'learning_rate':   0.0001,
         'dropout':         0.5,
-        'epochs':          1,
-        'batch_size':      10,
-        'init_sd':         0.01
+        'epochs':          20,
+        'batch_size':      4,
+        'init_sd':         0.01,
+        'training_images': 289,
+        'num_classes':     2,
+        'image_shape':     (160, 576),
+        'data_dir':        'data',
+        'runs_dir':        'runs',
+        'training_subdir': 'data_road/training',
+        'save_location':   'data/fcn/'
     }
     fcn = FCN(params)
     fcn.run_tests()
