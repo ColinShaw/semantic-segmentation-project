@@ -7,6 +7,7 @@ import shutil
 import zipfile
 import time
 import tensorflow as tf
+import cv2
 from glob import glob
 from urllib.request import urlretrieve
 from distutils.version import LooseVersion
@@ -69,6 +70,23 @@ def gen_batch_function(data_folder, image_shape):
                 gt_image_file = label_paths[os.path.basename(image_file)]
                 image         = scipy.misc.imresize(scipy.misc.imread(image_file), image_shape)
                 gt_image      = scipy.misc.imresize(scipy.misc.imread(gt_image_file), image_shape)
+
+                # Augment rotation
+                angle         = np.random.uniform(-30, 30)
+                image         = scipy.misc.imrotate(image, angle)
+                gt_image      = scipy.misc.imrotate(gt_image, angle)
+
+                # Augment luminance
+                image         = cv2.cvtColor(image.astype(np.uint8), cv2.COLOR_RGB2HLS)
+                image[:,:,1]  = image[:,:,1] * (0.25 + np.random.uniform(0.25, 0.75))
+                image         = cv2.cvtColor(image, cv2.COLOR_HLS2RGB)
+
+                # Augment translation
+                x             = np.random.uniform(-40, 40)
+                y             = np.random.uniform(-40, 40)
+                image         = cv2.warpAffine(image, np.float32([[1,0,x],[0,y,0]]), image_shape)
+                gt_image      = cv2.warpAffine(gt_image, np.float32([[1,0,x],[0,y,0]]), image_shape)
+          
                 gt_bg         = np.all(gt_image == background_color, axis=2)
                 gt_bg         = gt_bg.reshape(*gt_bg.shape, 1)
                 gt_image      = np.concatenate((gt_bg, np.invert(gt_bg)), axis=2)

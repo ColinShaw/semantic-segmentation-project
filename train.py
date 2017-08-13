@@ -182,9 +182,9 @@ Entry point
 '''
 if __name__ == '__main__':
     params = {
-        'learning_rate':   0.0001,
+        'learning_rate':   0.00001,
         'dropout':         0.5,
-        'epochs':          20,
+        'epochs':          100,
         'batch_size':      4,
         'init_sd':         0.01,
         'training_images': 289,
