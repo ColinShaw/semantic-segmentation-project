@@ -20,7 +20,7 @@ train.
 
 When run, the project invokes some tests around building block functions that 
 help ensure tensors of the right size and description are being used.  I 
-updated test method test_safe() to report the name of the function invoked 
+updated the test funtion `test_safe()` to report the name of the function invoked 
 since this is a bit more useful with the tests.  I also cleaned up the test 
 code and allowed for printing rather than suppressing it, as this aids in ad
 hoc debugging.  The project has been restructured in a class to facilitate 
@@ -46,7 +46,8 @@ improve this performance is to merge the outputs of the layers, scaled to
 the right resolution.  This works by producing cummulative layer activations
 and the ability, due to the convolutional kernels, to spread this activation
 locally to neighboring pixels.  This change in layer connectivity is called
-`skip layers` and the result is more accurate segmentation.
+`skip layers` and the result is more accurate segmentation, somewhat like 
+the so-called `U net`.
 
 In this exercise we are focusing on layers 3, 4 and 7.  First, each of these 
 layers have a 1x1 convolution layer added.  Next, layers 7 and 4 are merged, 
@@ -79,7 +80,7 @@ one that is compatible with minimization.
 
 At this point the network is trained.  This is pretty normal, though I added `tqdm` 
 so that there is a little nicer output reporting while going through batches and 
-epochs.  This can be seen in the `train_nn()` function.  You will notice that some
+epochs.  This can be seen in the `train_nn()` method.  You will notice that some
 of the hyperparameters are conveyed as properties.  As with other methods,
 some of the passed in arguments are actually tensors.  Using the properties made for
 a nicer way of grouping hyperparameters; more information noted later.  The basic 
@@ -93,7 +94,8 @@ liner.  The model is also saved later in the process.  This is accomplished by
 using a TensorFlow `Saver()`.  The metadata and the graph definition are written 
 out.  Reason for this is because we can use an optimizer on the graph for use 
 in faster inference applications.  This wasn't directly germane to the goal of 
-the exercise, but it is useful to know how to do.
+the exercise, but it is useful to know how to do.  More on extensions to the 
+project using the saved data at the end.
 
 
 
@@ -144,7 +146,7 @@ itself to some messy code, specifically regarding injection of training
 parameters.  The tests are a great way to ensure the model is appropriate,
 but they tend to enforce an interface, and that initially made coordination
 of injecting parameters fairly ugly (e.g. leaving `learning_rate` and
-`keep_prob` in the `train_nn()` function).  This is further complicated by 
+`keep_prob` in the `train_nn()` method).  This is further complicated by 
 the fact that TensorFlow in general takes a lot of arguments to functions
 by its nature, lending itself to somewhat inelegant code.
 
@@ -157,3 +159,33 @@ declaration.  This makes for a fairly nice API using the class where the
 tests are run after instantiation, followed by the full training run.  Parameters
 that were not hyperparameters were simply added as static class variables.
 
+
+
+### Video and Augmentation
+
+I reworked the code to add in the ability to save the model and then use
+it again for processing video.  One thing that made this simpler was to update
+the `optimize_cross_entropy()` method to add the name `logits` for the logits.  This 
+is because we use them later and want be able to get the op.  I downloaded a 
+driver's perspective video and ran the inference.  It was terrible.  The reason
+it was terrible is when we train from the data set provided there really isn't all
+that much variation, and there aren't all that many training images.  It happens
+to work pretty well for validation tests against similar images, but in the
+video I used, which had smears on the windshield and the road was a somewhat 
+different color, the results were as mesmerizingly bad as the validation set
+originally seemed mesmerizingly good to me.  
+
+In order to get anything resembling semantic segmentation while cross-training
+from the provided data set to the new video, I had to add augmentation.  I added
+rotations, translations and changes to the brightness.  I also significantly 
+reduced the learning rate and increased the number of epochs.  This still doesn't 
+work all that well. The different textures and colors of the road make for
+problems. As well, it actually segments the sky in some instances because the 
+sky in the video has more in common with the road from the training set than
+the road in the video.  
+
+While I was quite surprised with how well the model performed on the validation
+set, it is amazing how much harder the problem is when a more robust solution is
+needed.  It seems that it requires a lot of thoughtful augmentation, and really 
+would require significantly more training data, particularly training data that
+spans a wide range of road types. 
